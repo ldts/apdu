@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Foundries Ltd. 2021 - All Rights Reserved
+ * Author: Jorge Ramirez <jorge@foundries.io>
+ */
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdint.h>
