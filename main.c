@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-#include "apdu.h"
+#include "se.h"
 
 static int tlvGet_u8buf(uint32_t tag, size_t *index,
 			uint8_t *buf, size_t len,
@@ -145,20 +145,6 @@ int tlvGet_u8buf(uint32_t tag, size_t *index,
 	return 0;
 }
 
-static int error;
-
-static void handle(int signal_number)
-{
-	/* issued by libapduteec constructor */
-	if (signal_number == SIGABRT)
-		error = 1;
-}
-
-__attribute__((constructor(101)))static void init(void)
-{
-	signal(SIGABRT, handle);
-}
-
 int main()
 {
 	size_t ilen = sizeof(CMD_VERSION);
@@ -166,13 +152,8 @@ int main()
 	uint8_t out[892];
 	size_t olen = sizeof(out);
 
-	if (error) {
-		printf("error, cant access SE050\n");
-		return -ENODEV;
-	}
-
-	if (C_APDU_request(APDU_TYPE_4, CMD_HEADER, hlen, CMD_VERSION, ilen,
-			   out, &olen)) {
+	if (C_SE_apdu_request(SE_APDU_TYPE_4, CMD_HEADER, hlen, CMD_VERSION, ilen,
+			      out, &olen)) {
 		printf("error, cant communicate with TEE core\n");
 		return -EINVAL;
 	}
@@ -182,6 +163,7 @@ int main()
 		return -EINVAL;
 	}
 
+	printf("output len = %d\n", olen);
 	se05x_get_uuid(out, olen);
 
 	return 0;
